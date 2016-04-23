@@ -1,11 +1,6 @@
 package news;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-//import com.vnetpublishing.java.suapp.ISuperUserApplication;
+//import com.alee.laf.WebLookAndFeel;
 import com.notification.NotificationFactory;
 import com.notification.NotificationFactory.Location;
 import com.notification.NotificationManager;
@@ -14,30 +9,41 @@ import com.notification.types.IconNotification;
 import com.theme.ThemePackagePresets;
 import com.utils.IconUtils;
 import com.utils.Time;
-import java.net.*;
-import java.io.*;
-import javax.swing.JOptionPane;
+import de.javasoft.plaf.synthetica.SyntheticaAluOxideLookAndFeel;
 import java.awt.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowStateListener;
+import java.io.*;
 import java.io.IOException;
+import java.net.*;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+import java.text.ParseException;
 import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import java.util.Timer;
-import java.util.TimerTask;
+import javax.swing.JOptionPane;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import org.xml.sax.SAXException;
 
  /*
  * @author Sanatt Abrol
  */
-public class Form_Main_1 extends javax.swing.JFrame {
+public class Form_Main extends javax.swing.JFrame {
 
     /**
      * Creates new form Form_Main
@@ -50,28 +56,51 @@ public class Form_Main_1 extends javax.swing.JFrame {
             private static int COUNTER_0 = 0;
 	    private static final String TARGET_URL = "https://172.16.1.1:8090/login.xml";
             private static final String TARGET_URL_0 = "https://172.16.1.1:8090/logout.xml";
+            private static String[] VALUES = {};
             static Timer timer = new Timer();
     static int seconds = 0;
       
-    public Form_Main_1() {
+    public Form_Main() {
         initComponents();
         this.setLocationRelativeTo(null);
         stop.setEnabled(false);
-        jTextArea1.append("LOG STARTED");
-        jTextArea1.append('\n'+"------------------------------------------------------------------"+'\n');
-    try{
-        ReadDAT();
-        Thread.sleep(50);
-        ReadDAT1();
-        
-        
-    }
-    catch(IOException e){} catch (InterruptedException ex) {
-            Logger.getLogger(Form_Main_1.class.getName()).log(Level.SEVERE, null, ex);
+        try{
+            ReadFromXML();
+        }
+        catch(Exception e){
+            e.printStackTrace();
         }
         
+        //Event listener for Close
+        this.setDefaultCloseOperation(Form_Main.DO_NOTHING_ON_CLOSE);
+        this.addWindowListener(new WindowAdapter() {
+        @Override
+            public void windowClosing(WindowEvent event) {
+               
+                try{
+                    exitProcedure();
+                }
+                    catch(Exception e){e.printStackTrace();}// 
+            }
+        });
+        
+        //Event listener for Minimise
+        this.addWindowStateListener(new WindowStateListener(){
+        @Override
+            public void windowStateChanged(WindowEvent e) {
+                        if ((e.getNewState() & Frame.ICONIFIED) == Frame.ICONIFIED){
+                                MinimiseToSystemTray(1);
+                                setFrameVisible(false);    
+                        }    
+                   }
+        
+        });
+        
+        
+        
+        
     }
-
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -84,13 +113,9 @@ public class Form_Main_1 extends javax.swing.JFrame {
         jUsr = new javax.swing.JTextField();
         create = new javax.swing.JButton();
         stop = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
         jButton1 = new javax.swing.JButton();
         jUsr1 = new javax.swing.JTextField();
         jCheckBox1 = new javax.swing.JCheckBox();
-        jCheckBox2 = new javax.swing.JCheckBox();
-        jCheckBox3 = new javax.swing.JCheckBox();
         jCheckBox4 = new javax.swing.JCheckBox();
         jPsw1 = new javax.swing.JPasswordField();
         jPsw = new javax.swing.JPasswordField();
@@ -101,7 +126,6 @@ public class Form_Main_1 extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
-        jLabel18 = new javax.swing.JLabel();
         jCheckBox5 = new javax.swing.JCheckBox();
         jLabel7 = new javax.swing.JLabel();
         jLabel16 = new javax.swing.JLabel();
@@ -128,12 +152,6 @@ public class Form_Main_1 extends javax.swing.JFrame {
             }
         });
 
-        jTextArea1.setEditable(false);
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jTextArea1.setWrapStyleWord(true);
-        jScrollPane1.setViewportView(jTextArea1);
-
         jButton1.setText("Authenticate");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -145,20 +163,6 @@ public class Form_Main_1 extends javax.swing.JFrame {
         jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jCheckBox1ActionPerformed(evt);
-            }
-        });
-
-        jCheckBox2.setText("Save for next time");
-        jCheckBox2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBox2ActionPerformed(evt);
-            }
-        });
-
-        jCheckBox3.setText("Save for next time");
-        jCheckBox3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBox3ActionPerformed(evt);
             }
         });
 
@@ -183,9 +187,7 @@ public class Form_Main_1 extends javax.swing.JFrame {
 
         jLabel6.setText("Password");
 
-        jLabel18.setText("Having \"Limited Access\" ? check out the fix in the pdf file given along");
-
-        jCheckBox5.setText("Authenticate on Application Startup");
+        jCheckBox5.setText("Authenticate on App Startup");
         jCheckBox5.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jCheckBox5ActionPerformed(evt);
@@ -199,7 +201,7 @@ public class Form_Main_1 extends javax.swing.JFrame {
             }
         });
 
-        jLabel16.setText("Click on the blue icon to view application details");
+        jLabel16.setText("Crap-WH made by Sanatt Abrol.");
 
         jLabel17.setIcon(new javax.swing.ImageIcon(getClass().getResource("/news/information.png"))); // NOI18N
         jLabel17.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -220,7 +222,7 @@ public class Form_Main_1 extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(28, 28, 28)
+                .addGap(36, 36, 36)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -228,106 +230,80 @@ public class Form_Main_1 extends javax.swing.JFrame {
                                 .addComponent(jUsr)
                                 .addComponent(jPsw, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jLabel4))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(create)
-                            .addComponent(stop))
-                        .addGap(49, 49, 49))
-                    .addGroup(layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel18)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jCheckBox1)
-                                    .addComponent(jCheckBox3)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(49, 49, 49)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                            .addComponent(jLabel17)
-                                            .addComponent(jLabel2))))
-                                .addGap(2, 2, 2)
-                                .addComponent(jLabel19)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)))
-                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(stop, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(create, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(jLabel1)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jPsw1, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jCheckBox2)
+                            .addComponent(jCheckBox1)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(33, 33, 33)
-                                .addComponent(jLabel3))
-                            .addComponent(jLabel5)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel6)
-                                    .addComponent(jUsr1, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(18, 18, 18)
-                                .addComponent(jButton1))
-                            .addComponent(jCheckBox5, javax.swing.GroupLayout.PREFERRED_SIZE, 214, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addContainerGap(44, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jCheckBox4)
-                        .addGap(32, 197, Short.MAX_VALUE))))
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                                .addGap(150, 150, 150)
+                                .addComponent(jLabel17))
+                            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addGap(2, 2, 2)
+                        .addComponent(jLabel19)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 4, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPsw1, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane1)
-                        .addContainerGap())
+                        .addGap(33, 33, 33)
+                        .addComponent(jLabel3))
+                    .addComponent(jLabel5)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel7)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel16)
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel6)
+                            .addComponent(jUsr1, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addComponent(jButton1))
+                    .addComponent(jCheckBox5, javax.swing.GroupLayout.PREFERRED_SIZE, 214, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jCheckBox4))
+                .addContainerGap(41, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(215, 215, 215)
+                .addComponent(jLabel7)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel16)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
+                .addGap(27, 27, 27)
+                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(12, 12, 12)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jUsr, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(create))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel4)
+                .addGap(3, 3, 3)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jPsw, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(stop))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(27, 27, 27)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(1, 1, 1)
-                                .addComponent(jLabel1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jUsr, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jLabel4)
-                                        .addGap(4, 4, 4)
-                                        .addComponent(jPsw, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(create)
-                                        .addGroup(layout.createSequentialGroup()
-                                            .addGap(43, 43, 43)
-                                            .addComponent(stop))))
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(jCheckBox1)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jCheckBox3)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                            .addComponent(jLabel19)
-                                            .addComponent(jLabel17))
-                                        .addGap(34, 34, 34))))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 266, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                        .addComponent(jLabel18))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(66, 66, 66)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jCheckBox1)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel19)
+                            .addComponent(jLabel17))
+                        .addGap(77, 77, 77))))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 266, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGap(18, 18, 18)
                         .addComponent(jLabel5)
                         .addGap(1, 1, 1)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -340,22 +316,155 @@ public class Form_Main_1 extends javax.swing.JFrame {
                         .addComponent(jPsw1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jCheckBox4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jCheckBox2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jCheckBox5)
-                        .addGap(0, 13, Short.MAX_VALUE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jCheckBox5)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel7)
-                    .addComponent(jLabel16)))
+                    .addComponent(jLabel16))
+                .addGap(20, 20, 20))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-    
+    private void setFrameVisible(boolean param)
+    {
+            this.setVisible(param);
+    }
+    private void RestoreWindow()
+    {
+        this.setExtendedState(NORMAL);
+        this.setVisible(true);
+        //this.setExtendedState(MAXIMIZED_BOTH);
+        this.setLocationRelativeTo(null);
+    }
+    private void MinimiseToSystemTray(int val)
+    {
+        if(SystemTray.isSupported())
+        {
+            SystemTray systemTray = SystemTray.getSystemTray();
+            //Image of system tray icon
+            Image image = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource("/poop.gif"));
+            //popupmenu
+            PopupMenu trayPopupMenu = new PopupMenu();
+            //tray icon
+            TrayIcon trayIcon = new TrayIcon(image, "Crap-WH", trayPopupMenu);
+            //adjust to default size as per system recommendation 
+            trayIcon.setImageAutoSize(true);
+
+            
+            //3rd menuitem of popupmenu
+            MenuItem auth = new MenuItem(jButton1.getText());
+            auth.addActionListener(new ActionListener() {
+            @Override
+                public void actionPerformed(ActionEvent e) {
+                    jButton1.doClick();
+                    MinimiseToSystemTray(1);
+                    systemTray.remove(trayIcon);
+                }
+            });
+            trayPopupMenu.add(auth);
+            
+            //Hotspot state
+            String hotspotState;
+            if(create.isEnabled())
+                hotspotState="Start Hotspot";
+            else
+                hotspotState="Stop Hotspot";
+            
+            //4th menuitem of popupmenu
+            MenuItem hotspot = new MenuItem(hotspotState);
+            hotspot.addActionListener(new ActionListener() {
+            @Override
+                public void actionPerformed(ActionEvent e) {
+                    if(create.isEnabled())
+                        create.doClick();
+                    else if(stop.isEnabled())
+                        stop.doClick();
+                    MinimiseToSystemTray(1);
+                    systemTray.remove(trayIcon);
+                
+                }
+            });
+            trayPopupMenu.add(hotspot);
+            
+            //1st menuitem for popupmenu
+            MenuItem maximise = new MenuItem("Restore");
+            maximise.addActionListener(new ActionListener() {
+            @Override
+                public void actionPerformed(ActionEvent e) {
+                    //JOptionPane.showMessageDialog(null, "Action Clicked");
+                    RestoreWindow();
+                    systemTray.remove(trayIcon);
+                }
+            });     
+            trayPopupMenu.add(maximise);
+
+            //2nd menuitem of popupmenu
+            MenuItem close = new MenuItem("Close");
+            close.addActionListener(new ActionListener() {
+            @Override
+                public void actionPerformed(ActionEvent e) {
+                    System.exit(0);             
+                }
+            });
+            trayPopupMenu.add(close);
+
+            //setting tray icon
+            
+            try{
+                systemTray.add(trayIcon);
+                if(val==0)
+                    systemTray.remove(trayIcon);
+            }catch(AWTException awtException){
+                awtException.printStackTrace();
+            }
+            //System.out.println("end of main");
+
+        //end of if            
+        }
+    }
+    private void exitProcedure() throws ParserConfigurationException, SAXException, IOException, URISyntaxException, TransformerException
+    {
+        ModifyXML();
+        this.dispose();
+        System.exit(0);
+    }
+    private void ReadFromXML() throws URISyntaxException, ParserConfigurationException, SAXException, IOException, TransformerException
+    {
+        FileHandle fl = new FileHandle();
+        XMLClass xm = new XMLClass();
+        //Checking of file exists
+        if(!fl.CheckForFileInParentDirectory("settings","config.xml"))
+            xm.createNewXML();
+        
+        //Reading the XML file
+        String[] values = xm.ReadXML();
+        jUsr.setText(values[0]);
+        jPsw.setText(values[1]);
+        jUsr1.setText(values[2]);
+        jPsw1.setText(values[3]);
+        if(values[4].equalsIgnoreCase("0"))
+            jCheckBox5.setSelected(false);
+        else
+            jCheckBox5.setSelected(true);
+        if(values[4].equalsIgnoreCase("1"))
+            jButton1.doClick();
+    }
+    private void ModifyXML() throws ParserConfigurationException, SAXException, IOException, URISyntaxException, TransformerException
+    {
+        //generating the array
+        String autoAuth;
+        if(jCheckBox5.isSelected())
+            autoAuth = "1";
+        else
+            autoAuth = "0";
+        String[] values = {jUsr.getText(), jPsw.getText(), jUsr1.getText(), jPsw1.getText(), autoAuth};
+        
+        //writing array to XML file
+        XMLClass xm = new XMLClass();
+        xm.ModifyXML(values);
+    }
     private String readResponse(HttpURLConnection urlConnection) throws IOException
     {
  
@@ -369,6 +478,7 @@ public class Form_Main_1 extends javax.swing.JFrame {
  
             StringBuilder response = new StringBuilder();
  
+           
             // Read until there is nothing left in the stream
             // throws IOException
             while ((responeLine = bufferedReader.readLine()) != null)
@@ -408,6 +518,7 @@ public class Form_Main_1 extends javax.swing.JFrame {
  
         }
     }
+    
     
     public void Cyberoam(int x,String u, String p) throws NoSuchAlgorithmException, KeyManagementException, InterruptedException
     {
@@ -601,7 +712,8 @@ stop.setEnabled(false);
                 else if(x==1)
                     x=0;
                 Cyberoam(x,jUsr1.getText(),jPsw1.getText());
-                MyTimer();
+                
+                //MyTimer();
             }
             else
                 JOptionPane.showMessageDialog(null,"Can't connect to Cyberoam Server");
@@ -627,34 +739,13 @@ if(jCheckBox1.isSelected()==true)
 }        // TODO add your handling code here:
     }//GEN-LAST:event_jCheckBox1ActionPerformed
 
-    private void jCheckBox3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox3ActionPerformed
-try{
-WriteDAT();
-}
-catch(Exception e){}        // TODO add your handling code here:
-    }//GEN-LAST:event_jCheckBox3ActionPerformed
-
-    private void jCheckBox2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox2ActionPerformed
-try{
-WriteDAT1();
-}
-catch(Exception e){}        // TODO add your handling code here:
-    }//GEN-LAST:event_jCheckBox2ActionPerformed
-
     private void jCheckBox5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox5ActionPerformed
 
-try{
-    
-    WriteDAT1();
-
-}
-
-catch(Exception e)
-{}// TODO add your handling code here:
+// TODO add your handling code here:
     }//GEN-LAST:event_jCheckBox5ActionPerformed
 
     private void jLabel7MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel7MouseClicked
-JOptionPane.showMessageDialog(null,"Crap-WH made by Sanatt Abrol BE/10489/15 using NetBeasn IDE 8.0");        // TODO add your handling code here:
+JOptionPane.showMessageDialog(null,"Crap-WH \n made by Sanatt Abrol BE/10489/15 \n using NetBeasn IDE 8.0");        // TODO add your handling code here:
     }//GEN-LAST:event_jLabel7MouseClicked
 
     private void jLabel17MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel17MouseClicked
@@ -708,86 +799,8 @@ jButton1.setText("Authenticate");
     }
     
    
-    public void ReadDAT() throws FileNotFoundException, IOException
-        {
-         
-       File f = new File("dbs.dat");
-       FileReader fw = new FileReader(f);    
-       BufferedReader br = new BufferedReader(fw);
-       Scanner sc = new Scanner(br);
-       int i=0;
-while(sc.hasNextLine() && i<3){
-
-        if(i==0)
-            jUsr.setText(sc.nextLine());
-        else if(i==1)
-            jPsw.setText(sc.nextLine());
-        else if(i==2)
-        {
-            int x = Integer.parseInt(sc.nextLine());
-            if(x==1)
-                   jCheckBox3.setSelected(true);
-        }
-        
-        i++;
-}
-    }
-    public void ReadDAT1() throws FileNotFoundException, IOException
-    {
-       File f = new File("dbs1.dat");
-       FileReader fw = new FileReader(f);    
-       BufferedReader br = new BufferedReader(fw);
-       Scanner sc = new Scanner(br);
-       int i=0;
-while(sc.hasNextLine() && i<4){
-
-        if(i==0)
-            jUsr1.setText(sc.nextLine());
-        else if(i==1)
-            jPsw1.setText(sc.nextLine());
-        else if(i==2)
-        {   
-            int x = Integer.parseInt(sc.nextLine());
-            if(x==1)
-                   jCheckBox2.setSelected(true);
-        }
-        else if(i==3)
-        {
-            int x = Integer.parseInt(sc.nextLine());
-            if(x==1)
-            {
-                jCheckBox5.setSelected(true);
-                jButton1.doClick();
-            }
-        }
-        i++;
-}
-      }
-    
-   public void WriteDAT() throws IOException
-   {
-       File f = new File("dbs.dat");
-       FileWriter fw = new FileWriter(f);    
-       BufferedWriter bw = new BufferedWriter(fw);
-       bw.write(jUsr.getText()+"\n"+jPsw.getText()+"\n"+"1");
-       bw.flush();
-       bw.close();
-   }
    
-   public void WriteDAT1() throws IOException
-   {
-       File f = new File("dbs1.dat");
-       FileWriter fw = new FileWriter(f);    
-       BufferedWriter bw = new BufferedWriter(fw);
-       if(jCheckBox5.isSelected())
-           bw.write(jUsr1.getText()+"\n"+jPsw1.getText()+"\n"+"1"+"\n"+"1");
-       else
-           bw.write(jUsr1.getText()+"\n"+jPsw1.getText()+"\n"+"1");
-       bw.flush();
-       bw.close();
-   }
-   
-   public void MyTimer() {
+ /*  public void MyTimer() {
 
         TimerTask task;
 
@@ -803,7 +816,7 @@ while(sc.hasNextLine() && i<4){
                         try {
                             Thread.sleep(500);
                         } catch (InterruptedException ex) {
-                            Logger.getLogger(Form_Main_1.class.getName()).log(Level.SEVERE, null, ex);
+                            Logger.getLogger(Form_Main.class.getName()).log(Level.SEVERE, null, ex);
                         }
                         jButton1.doClick();
                     }
@@ -814,7 +827,7 @@ while(sc.hasNextLine() && i<4){
                
 
     }
-   
+   */
    public boolean Ping(String addr){
        //To ping a particular server
        try {
@@ -872,7 +885,7 @@ NotificationFactory factory = new NotificationFactory(ThemePackagePresets.cleanD
 //jTextArea1.append('\n'+line);
 line=reader.readLine(); 
 } 
-
+    p.destroy();
 } 
 catch(IOException e1) {
     stop.setEnabled(true);
@@ -904,7 +917,7 @@ System.out.println(line);
 //jTextArea1.append(line);
 line=reader.readLine(); 
 } 
-
+    p.destroy();
 } 
 catch(IOException e1) {
 JOptionPane.showMessageDialog(null,"Sorry! Can not configure this interface");
@@ -932,7 +945,7 @@ System.out.println(line);
                   stop.setEnabled(false);
         
         }
-        if(line.equalsIgnoreCase("The hosted network started. "))
+        else if(line.equalsIgnoreCase("The hosted network started. "))
         {
             NotificationFactory factory = new NotificationFactory(ThemePackagePresets.cleanDark());
             NotificationManager man = new SimpleManager(Location.SOUTHEAST);
@@ -943,10 +956,16 @@ System.out.println(line);
 
         
         }
+        else if(line.equals("")){}
+        else{
+            JOptionPane.showMessageDialog(null,"You need to run this with admin priveleges. Run 'run_32.bat' for 32-bit windows or 'run_64.bat' for 64 bit windows");
+        
+        
+        }
 //jTextArea1.append('\n'+line);
 line=reader.readLine(); 
 } 
-
+    p.destroy();
 } 
 catch(IOException e1) {
     stop.setEnabled(false);
@@ -957,50 +976,56 @@ catch(InterruptedException e2) {
 JOptionPane.showMessageDialog(null,"Sorry! Can not configure this interface");
 } 
 
+            
  
  
- }   /**
+ }   
+ 
+ /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         //*///SU.run(new Form_Main(), args);
+    public static void main(String args[]) throws ParseException, UnsupportedLookAndFeelException {
+   
+          /* Set the Nimbus look and feel */
+          //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+          /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
+          /*
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Windows".equals(info.getName())) {
                   // this.getContentPane().setBackground( Color.red );
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    
+       
                     break;
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Form_Main_1.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Form_Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Form_Main_1.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Form_Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Form_Main_1.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Form_Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Form_Main_1.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Form_Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
+          //</editor-fold>
+          
+          /* Create and display the form */
+        javax.swing.UIManager.setLookAndFeel(new SyntheticaAluOxideLookAndFeel());  
+        Form_Main fm = new Form_Main();
+           java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try{
-                        Thread.sleep(0561);
+                        Thread.sleep(0361);
+                        //javax.swing.UIManager.setLookAndFeel(new SyntheticaAluOxideLookAndFeel());
                 }
                 catch(Exception e)
                 {}
                 //Form_Main.CENTER_ALIGNMENT;
                 
-                new Form_Main_1().setVisible(true);
-                
-                
+                //new Form_Main().setVisible(true);
+                fm.setVisible(true);
             }
         });
     }
@@ -1009,14 +1034,11 @@ JOptionPane.showMessageDialog(null,"Sorry! Can not configure this interface");
     private javax.swing.JButton create;
     private javax.swing.JButton jButton1;
     private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JCheckBox jCheckBox2;
-    private javax.swing.JCheckBox jCheckBox3;
     private javax.swing.JCheckBox jCheckBox4;
     private javax.swing.JCheckBox jCheckBox5;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
-    private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -1026,9 +1048,7 @@ JOptionPane.showMessageDialog(null,"Sorry! Can not configure this interface");
     private javax.swing.JLabel jLabel7;
     private javax.swing.JPasswordField jPsw;
     private javax.swing.JPasswordField jPsw1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField jUsr;
     private javax.swing.JTextField jUsr1;
     private javax.swing.JButton stop;
